@@ -1,6 +1,6 @@
 ## AMD proc! plugin.
 
-This plugin loads text/html file using `text!` plugin, applies some procedure/transformation to file's content and returns result of transformation.
+This plugin loads text/html file using some plugin (`text!` by default), applies some procedure/transformation to file's content and returns result of transformation.
 If no procedure is applied the original file's content will be returned.
 
 The procedure that should be applied can be specified at the end of resource name after exclamation sign `!` in the following form:
@@ -24,6 +24,8 @@ The following configuration settings are supported (name - type - description):
 * `proc` - Object - map of registered procedures; keys are names of procedures, values are corresponding procedures;
      procedure can be a function or an object that has method with name `execute`;
      the resource's content will be passed into the function/method to get the result that plugin will return.
+
+Configuration settings have priority over settings that are set by module API functions (see below).
 
 ## Dependencies
 
@@ -54,6 +56,8 @@ curl(["path/to/plugin/proc"], function(proc) {
 });
 ```
 
+Settings made by the following functions can be used along with configuration settings but the latter have priority.
+
 ### setProc(sProcName: String, proc: Function|Object)
 
 Registers/adds the procedure to the list of available procedures.
@@ -83,7 +87,7 @@ Sets the default file extension that is used if it is not specified inside resou
 ### setDefaultLoader(sExt: sLoader)
 
 Sets the default loader/plugin that should be used when it is not specified inside resource name.
-The value of the parameter should represent plugin name without the trailing exclamation sign (e.g. `"text"` or `"view"`).
+The value of the parameter should represent plugin name without the trailing exclamation sign (e.g. `'text'` or '[view](https://github.com/gamtiq/amd-view-plugin)').
 
 ## Licence
 
