@@ -1,5 +1,7 @@
 ## AMD proc! plugin.
 
+Compatible with [curl.js](https://github.com/cujojs/curl) and [require.js](http://requirejs.org/).
+
 This plugin loads text/html file using some plugin (`text!` by default), applies some procedure/transformation to file's content and returns result of transformation.
 If no procedure is applied the original file's content will be returned.
 
@@ -24,6 +26,48 @@ The following configuration settings are supported (name - type - description):
 * `proc` - Object - map of registered procedures; keys are names of procedures, values are corresponding procedures;
      procedure can be a function or an object that has method with name `execute`;
      the resource's content will be passed into the function/method to get the result that plugin will return.
+
+Configuration example for `curl.js`:
+```js
+// Before curl.js loading
+var curl = {
+    pluginPath: "path/to/plugins",
+    plugins: {
+        proc: {
+            proc: {
+                template: function(text) {
+                    ...
+                },
+                
+                reverse: function(text) {
+                    return text.split("").reverse().join("");
+                }
+            },
+            "default": "reverse"
+        }
+    }
+};
+```
+
+Configuration example for `require.js`:
+```js
+require.config({
+    config: {
+        proc: {
+            proc: {
+                template: function(text) {
+                    ...
+                },
+                
+                reverse: function(text) {
+                    return text.split("").reverse().join("");
+                }
+            },
+            "default": "reverse"
+        }
+    }
+});
+```
 
 Configuration settings have priority over settings that are set by module API functions (see below).
 

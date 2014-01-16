@@ -2,6 +2,7 @@
  * proc.js
    
     AMD proc! plugin.
+    Compatible with `curl.js` and `require.js`.
     
     This plugin loads text/html file using `text!` plugin, applies some procedure/transformation to file's content and returns result of transformation.
     If no procedure is applied the original file's content will be returned.
@@ -50,7 +51,7 @@
 
 
 
-define(["./util/base"], function(basicUtil) {
+define(["./util/base", "module"], function(basicUtil, module) {
     "use strict";
     
     var 
@@ -159,6 +160,10 @@ define(["./util/base"], function(basicUtil) {
                 proc;
             if (! config) {
                 config = {};
+            }
+            // Adaptation for require.js
+            else if (config.config && typeof config.config === "object" && config.config[module.id]) {
+                config = module.config();
             }
             // Determine procedure that should be used
             if (nI > -1) {
