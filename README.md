@@ -20,13 +20,13 @@ So default procedure can be used only with default resource loader (see below).
 
 The following configuration settings are supported (name - type - description):
 
-* `defaultExt` - String - default file extension that is used if it is not specified inside resource name;
+* `defaultExt` - `String` - default file extension that is used if it is not specified inside resource name;
      the default value is `'html'`.
-* `default` - Function, Object, String - the procedure that should be used by default when procedure is not specified inside resource name;
+* `default` - `Function`, `Object`, `String` - the procedure that should be used by default when procedure is not specified inside resource name;
      can be a function, an object that has method with name `execute`, or a name of one of registered/configured procedures.
-* `loader` - String - default loader/plugin (without trailing exclamation sign) that should be used when loader is not specified inside resource name;
+* `loader` - `String` - default loader/plugin (without trailing exclamation sign) that should be used when loader is not specified inside resource name;
      the default value is `'text'`.
-* `proc` - Object - map of registered procedures; keys are names of procedures, values are corresponding procedures;
+* `proc` - `Object` - map of registered procedures; keys are names of procedures, values are corresponding procedures;
      procedure can be a function or an object that has method with name `execute`;
      the resource's content will be passed into the function/method to get the result that plugin will return.
 
