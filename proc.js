@@ -4,8 +4,8 @@
     AMD proc! plugin.
     Compatible with `curl.js` and `require.js`.
     
-    This plugin loads text/html file using `text!` plugin, applies some procedure/transformation to file's content and returns result of transformation.
-    If no procedure is applied the original file's content will be returned.
+    This plugin loads resource file using specified plugin, applies some procedure/transformation to resource's content and returns result of transformation.
+    If no procedure is applied the original resource's content will be returned.
     
     The procedure that should be applied can be specified at the end of resource name after exclamation sign `!` in the following form:
     `<resource name>!<procedure name>`
@@ -14,6 +14,9 @@
     where `compile` is the name of registered/configured procedure.
     
     If procedure name is not specified in the resource name, the default procedure will be used.
+    When procedure name is not specified in the resource name, the resource loader also should be omitted in the resource name.
+    Otherwise plugin does not work correctly.
+    So default procedure can be used only with default resource loader (see below).
     
     ## Configuration
     
@@ -31,22 +34,25 @@
     
     ## Dependencies
     
-    * `text` plugin
     * `./util/base` module
+    * plugins to load resources (for example, `text` plugin)
     
     ## Usage
     
     ```javascript
-    // loads some/folder/view.html and applies the default procedure (supposed that 'html' is set as default extension)
+    // loads some/folder/view.html using default loader and applies the default procedure (supposed that 'html' is set as default extension)
     define(['proc!some/folder/view'], function(view) {...});
     
-    // loads some/folder/view.tmpl and applies template procedure
+    // loads some/folder/view.tmpl using default loader and applies template procedure
     define(['proc!some/folder/view.tmpl!template'], function(view) {...});
+    
+    // loads some/folder/data.json using json! loader plugin and applies prepare procedure
+    define(['proc!json!some/folder/data.json!prepare'], function(data) {...});
     ```
     
- * @version 0.1.0
+ * @version 0.1.1
  * @author Denis Sikuler
- * @license MIT License (c) 2013 Copyright Denis Sikuler
+ * @license MIT License (c) 2013-2014 Copyright Denis Sikuler
  */
 
 
@@ -156,8 +162,8 @@ define(["./util/base", "module"], function(basicUtil, module) {
         // Plugin API
 
         "load": function(sResourceName, require, callback, config) {
-            var nI = sResourceName.indexOf("!"),
-                proc;
+            var nI = sResourceName.lastIndexOf("!"),
+                proc, sLoader;
             if (! config) {
                 config = {};
             }
@@ -173,11 +179,18 @@ define(["./util/base", "module"], function(basicUtil, module) {
             if (! proc) {
                 proc = config["default"] || defaultProc;
             }
+            // Determine loader
+            if (sResourceName.indexOf("!") > -1) {
+                sLoader = "";
+            }
+            else {
+                sLoader = (config.loader || sDefaultLoader) + "!";
+            }
             // Load resource
-            require([(config.loader || sDefaultLoader) + "!" + require.toUrl( basicUtil.nameWithExt(sResourceName, config.defaultExt || sDefaultExt) )], 
-                function(sText) {
+            require([sLoader + require.toUrl( basicUtil.nameWithExt(sResourceName, config.defaultExt || sDefaultExt) )], 
+                function(resource) {
                     // Process resource and return result
-                    var result = sText;
+                    var result = resource;
                     if (proc) {
                         if (typeof proc === "string") {
                             if (config.proc && (proc in config.proc)) {
@@ -188,10 +201,10 @@ define(["./util/base", "module"], function(basicUtil, module) {
                             }
                         }
                         if (typeof proc === "function") {
-                            result = proc(sText);
+                            result = proc(resource);
                         }
                         else if (proc && typeof proc === "object" && typeof proc.execute === "function") {
-                            result = proc.execute(sText);
+                            result = proc.execute(resource);
                         }
                     }
                     callback(result);

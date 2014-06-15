@@ -2,8 +2,8 @@
 
 Compatible with [curl.js](https://github.com/cujojs/curl) and [require.js](http://requirejs.org/).
 
-This plugin loads text/html file using some plugin (`text!` by default), applies some procedure/transformation to file's content and returns result of transformation.
-If no procedure is applied the original file's content will be returned.
+This plugin loads resource file using specified plugin, applies some procedure/transformation to resource's content and returns result of transformation.
+If no procedure is applied the original resource's content will be returned.
 
 The procedure that should be applied can be specified at the end of resource name after exclamation sign `!` in the following form:
 `<resource name>!<procedure name>`
@@ -12,6 +12,9 @@ For example:
 where `compile` is the name of registered/configured procedure.
 
 If procedure name is not specified in the resource name, the default procedure will be used.
+When procedure name is not specified in the resource name, the resource loader also should be omitted in the resource name.
+Otherwise plugin does not work correctly.
+So default procedure can be used only with default resource loader (see below).
 
 ## Configuration
 
@@ -73,17 +76,20 @@ Configuration settings have priority over settings that are set by module API fu
 
 ## Dependencies
 
-* `text` plugin
 * `./util/base` module
+* plugins to load resources (for example, `text` plugin)
 
 ## Usage
 
 ```javascript
-// loads some/folder/view.html and applies the default procedure (supposed that 'html' is set as default extension)
+// loads some/folder/view.html using default loader and applies the default procedure (supposed that 'html' is set as default extension)
 define(['proc!some/folder/view'], function(view) {...});
 
-// loads some/folder/view.tmpl and applies template procedure
+// loads some/folder/view.tmpl using default loader and applies template procedure
 define(['proc!some/folder/view.tmpl!template'], function(view) {...});
+
+// loads some/folder/data.json using json! loader plugin and applies prepare procedure
+define(['proc!json!some/folder/data.json!prepare'], function(data) {...});
 ```
 
 ## Module API
