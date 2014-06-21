@@ -5,11 +5,14 @@ Compatible with [curl.js](https://github.com/cujojs/curl) and [require.js](http:
 This plugin loads resource file using specified plugin, applies some procedure/transformation to resource's content and returns result of transformation.
 If no procedure is applied the original resource's content will be returned.
 
-The procedure that should be applied can be specified at the end of resource name after exclamation sign `!` in the following form:
-`<resource name>!<procedure name>`
-For example:
-`path/to/some/template!compile`
-where `compile` is the name of registered/configured procedure.
+The procedure that should be applied can be specified at the end of resource name after exclamation sign `!` in the following form:  
+`<resource name>!<procedure name>[<separator><parameter 1><separator><parameter 2>...]`  
+where `separator` is `^` by default (can be configured).  
+Parameters are optional. They are strings that will be passed into the procedure after resource's content (which is zero parameter).  
+For example:  
+`path/to/some/template!compile^debug`  
+where `compile` is the name of registered/configured procedure, `debug` is the string that should be passed into the procedure
+after template's content.
 
 If procedure name is not specified in the resource name, the default procedure will be used.
 When procedure name is not specified in the resource name, the resource loader also should be omitted in the resource name.
@@ -26,6 +29,8 @@ The following configuration settings are supported (name - type - description):
      can be a function, an object that has method with name `execute`, or a name of one of registered/configured procedures.
 * `loader` - `String` - default loader/plugin (without trailing exclamation sign) that should be used when loader is not specified inside resource name;
      the default value is `'text'`.
+* `paramSeparator` - String - separator for procedure parameters that are specified inside resource name;
+     the default value is `'^'`.
 * `proc` - `Object` - map of registered procedures; keys are names of procedures, values are corresponding procedures;
      procedure can be a function or an object that has method with name `execute`;
      the resource's content will be passed into the function/method to get the result that plugin will return.
@@ -90,6 +95,9 @@ define(['proc!some/folder/view.tmpl!template'], function(view) {...});
 
 // loads some/folder/data.json using json! loader plugin and applies prepare procedure
 define(['proc!json!some/folder/data.json!prepare'], function(data) {...});
+
+// loads some/folder/data.json using json! loader plugin and applies value procedure with specified parameter
+define(['proc!json!some/folder/data.json!value^path.to.value'], function(data) {...});
 ```
 
 ## Module API
@@ -102,7 +110,8 @@ Usage example:
 curl(["path/to/plugin/proc"], function(proc) {
     proc.setProc("p1", function() {...})
         .setProc("p2", {data: ..., execute: function() {...}})
-        .setDefaultProc("p1");
+        .setDefaultProc("p1")
+        .setParamSeparator("#");
 });
 ```
 
@@ -138,6 +147,10 @@ Sets the default file extension that is used if it is not specified inside resou
 
 Sets the default loader/plugin that should be used when it is not specified inside resource name.
 The value of the parameter should represent plugin name without the trailing exclamation sign (e.g. `'text'` or '[view](https://github.com/gamtiq/amd-view-plugin)').
+
+### setParamSeparator(sSeparator: String)
+
+Sets the separator for procedure parameters that are specified inside resource name.
 
 ## Licence
 

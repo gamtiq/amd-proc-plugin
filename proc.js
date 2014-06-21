@@ -8,10 +8,13 @@
     If no procedure is applied the original resource's content will be returned.
     
     The procedure that should be applied can be specified at the end of resource name after exclamation sign `!` in the following form:
-    `<resource name>!<procedure name>`
+    `<resource name>!<procedure name>[<separator><parameter 1><separator><parameter 2>...]`
+    where `separator` is `^` by default (can be configured).
+    Parameters are optional. They are strings that will be passed into the procedure after resource's content (which is zero parameter).
     For example:
-    `path/to/some/template!compile`
-    where `compile` is the name of registered/configured procedure.
+    `path/to/some/template!compile^debug`
+    where `compile` is the name of registered/configured procedure, `debug` is the string that should be passed into the procedure
+    after template's content.
     
     If procedure name is not specified in the resource name, the default procedure will be used.
     When procedure name is not specified in the resource name, the resource loader also should be omitted in the resource name.
@@ -28,6 +31,8 @@
          can be a function, an object that has method with name `execute`, or a name of one of registered/configured procedures.
     * `loader` - String - default loader/plugin (without trailing exclamation sign) that should be used when loader is not specified inside resource name;
          the default value is `'text'`.
+    * `paramSeparator` - String - separator for procedure parameters that are specified inside resource name;
+         the default value is `'^'`.
     * `proc` - Object - map of registered procedures; keys are names of procedures, values are corresponding procedures;
          procedure can be a function or an object that has method with name `execute`;
          the resource's content will be passed into the function/method to get the result that plugin will return.
@@ -48,9 +53,12 @@
     
     // loads some/folder/data.json using json! loader plugin and applies prepare procedure
     define(['proc!json!some/folder/data.json!prepare'], function(data) {...});
+    
+    // loads some/folder/data.json using json! loader plugin and applies value procedure with specified parameter
+    define(['proc!json!some/folder/data.json!value^path.to.value'], function(data) {...});
     ```
     
- * @version 0.1.1
+ * @version 0.1.2
  * @author Denis Sikuler
  * @license MIT License (c) 2013-2014 Copyright Denis Sikuler
  */
@@ -68,7 +76,9 @@ define(["./util/base", "module"], function(basicUtil, module) {
         // Default resource file extension
         sDefaultExt = "html",
         // Default plugin that should be used to load resource
-        sDefaultLoader = "text";
+        sDefaultLoader = "text",
+        // Default separator for procedure parameters
+        sParamSeparator = "^";
     
     // Export
     return {
@@ -159,6 +169,19 @@ define(["./util/base", "module"], function(basicUtil, module) {
             return this;
         },
         
+        /**
+         * Sets the separator for procedure parameters that are specified inside resource name.
+         * 
+         * @param {String} sSeparator
+         *      Separator for procedure parameters that are specified inside resource name.
+         * @return {Object}
+         *      <code>this</code> object.
+         */
+        "setParamSeparator": function(sSeparator) {
+            sParamSeparator = sSeparator;
+            return this;
+        },
+        
         // Plugin API
 
         "load": function(sResourceName, require, callback, config) {
@@ -190,9 +213,15 @@ define(["./util/base", "module"], function(basicUtil, module) {
             require([sLoader + require.toUrl( basicUtil.nameWithExt(sResourceName, config.defaultExt || sDefaultExt) )], 
                 function(resource) {
                     // Process resource and return result
-                    var result = resource;
+                    var result = resource,
+                        paramList;
                     if (proc) {
                         if (typeof proc === "string") {
+                            // Extract parameters
+                            paramList = proc.split(config.paramSeparator || sParamSeparator);
+                            proc = paramList[0];
+                            paramList[0] = resource;
+                            // Search specified procedure
                             if (config.proc && (proc in config.proc)) {
                                 proc = config.proc[proc];
                             }
@@ -200,11 +229,14 @@ define(["./util/base", "module"], function(basicUtil, module) {
                                 proc = procMap[proc];
                             }
                         }
+                        else {
+                            paramList = [resource];
+                        }
                         if (typeof proc === "function") {
-                            result = proc(resource);
+                            result = proc.apply(null, paramList);
                         }
                         else if (proc && typeof proc === "object" && typeof proc.execute === "function") {
-                            result = proc.execute(resource);
+                            result = proc.execute.apply(proc, paramList);
                         }
                     }
                     callback(result);
