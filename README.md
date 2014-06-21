@@ -29,7 +29,7 @@ The following configuration settings are supported (name - type - description):
      can be a function, an object that has method with name `execute`, or a name of one of registered/configured procedures.
 * `loader` - `String` - default loader/plugin (without trailing exclamation sign) that should be used when loader is not specified inside resource name;
      the default value is `'text'`.
-* `paramSeparator` - String - separator for procedure parameters that are specified inside resource name;
+* `paramSeparator` - `String` - separator for procedure parameters that are specified inside resource name;
      the default value is `'^'`.
 * `proc` - `Object` - map of registered procedures; keys are names of procedures, values are corresponding procedures;
      procedure can be a function or an object that has method with name `execute`;
@@ -97,7 +97,7 @@ define(['proc!some/folder/view.tmpl!template'], function(view) {...});
 define(['proc!json!some/folder/data.json!prepare'], function(data) {...});
 
 // loads some/folder/data.json using json! loader plugin and applies value procedure with specified parameter
-define(['proc!json!some/folder/data.json!value^path.to.value'], function(data) {...});
+define(['proc!json!some/folder/data.json!value^path.to.value'], function(someValue) {...});
 ```
 
 ## Module API
