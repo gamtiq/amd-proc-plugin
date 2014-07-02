@@ -37,8 +37,13 @@ The following configuration settings are supported (name - type - description):
 
 Configuration example for `curl.js`:
 ```js
-// Before curl.js loading
-var curl = {
+curl.config({
+    packages: {
+        proc: {
+            location: "path/to/plugins/proc",
+            main: "proc"
+        }
+    },
     pluginPath: "path/to/plugins",
     plugins: {
         proc: {
@@ -54,14 +59,24 @@ var curl = {
             "default": "reverse"
         }
     }
-};
+});
 ```
 
 Configuration example for `require.js`:
 ```js
 require.config({
+    packages: [
+        {
+            name: "proc",
+            location: "path/to/plugins/proc",
+            main: "proc"
+        }
+    ],
+    paths: {
+        text: "path/to/plugins/text"
+    },
     config: {
-        proc: {
+        "proc/proc": {
             proc: {
                 template: function(text) {
                     ...
@@ -151,6 +166,10 @@ The value of the parameter should represent plugin name without the trailing exc
 ### setParamSeparator(sSeparator: String)
 
 Sets the separator for procedure parameters that are specified inside resource name.
+
+## Related project
+
+Possibly you might find helpful [amd-view-plugin](https://github.com/gamtiq/amd-view-plugin).
 
 ## Licence
 
